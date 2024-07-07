@@ -82,3 +82,6 @@ issues:
     - path: '(.+)_test.go'
       linters:
         - varnamelen
+    - path: 'slog_test.go'
+      linters:
+        - testableexamples
