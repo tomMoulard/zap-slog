@@ -3,9 +3,12 @@ package zapslog_test
 import (
 	"bytes"
 	"context"
+	"io"
 	"log/slog"
+	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	zapslog "github.com/tommoulard/zap-slog"
 	"go.uber.org/zap"
@@ -22,20 +25,29 @@ func TestWrapCore(t *testing.T) {
 	t.Parallel()
 
 	var b bytes.Buffer
-	loggerSlog := slog.New(slog.NewTextHandler(&b, &slog.HandlerOptions{Level: slog.LevelDebug}))
+	handler := slog.NewTextHandler(
+		io.MultiWriter(&b, testLogWriter{t}),
+		&slog.HandlerOptions{Level: slog.LevelDebug},
+	)
+	loggerSlog := slog.New(handler)
 
 	loggerZap, err := zap.NewProduction(zapslog.WrapCore(loggerSlog))
 	require.NoError(t, err)
 
-	loggerZap.Info("hello world")
+	loggerZap.Debug("debug level")
+	loggerZap.Info("info level")
+	loggerZap.Warn("warn level")
+	loggerZap.Error("error level")
 
 	err = loggerZap.Sync()
 	require.NoError(t, err)
 
 	bs := b.String()
-	t.Log(bs)
 
-	require.Contains(t, bs, "hello world")
+	assert.Contains(t, bs, `level=DEBUG msg="debug level"`)
+	assert.Contains(t, bs, `level=INFO msg="info level"`)
+	assert.Contains(t, bs, `level=WARN msg="warn level"`)
+	assert.Contains(t, bs, `level=ERROR msg="error level"`)
 }
 
 func BenchmarkWrapCore(b *testing.B) {
@@ -70,3 +82,11 @@ func (noopSlogHandler) Enabled(context.Context, slog.Level) bool  { return true 
 func (noopSlogHandler) Handle(context.Context, slog.Record) error { return nil }
 func (h noopSlogHandler) WithAttrs([]slog.Attr) slog.Handler      { return h }
 func (h noopSlogHandler) WithGroup(string) slog.Handler           { return h }
+
+type testLogWriter struct{ t *testing.T }
+
+func (w testLogWriter) Write(p []byte) (int, error) {
+	w.t.Log(strings.TrimSuffix(string(p), "\n"))
+
+	return len(p), nil
+}

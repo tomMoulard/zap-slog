@@ -26,15 +26,7 @@ type zapSlogCore struct {
 }
 
 func (c *zapSlogCore) Enabled(level zapcore.Level) bool {
-	var levelSlog slog.Level
-	if err := levelSlog.UnmarshalText([]byte(level.String())); err != nil {
-		c.logger.Warn("Failed to unmarshal log level",
-			"level", level, "error", err)
-
-		return false
-	}
-
-	return c.logger.Enabled(context.Background(), levelSlog)
+	return c.logger.Enabled(context.Background(), zapCoreLevelToSlogLevel(level))
 }
 
 func fieldToAttr(field zapcore.Field) slog.Attr {
@@ -96,23 +88,8 @@ func (c *zapSlogCore) Write(entry zapcore.Entry, fields []zapcore.Field) error {
 	attrs = append(attrs, fieldToAttrs(fields)...)
 	attrs = append(attrs, slog.String("stack", entry.Stack))
 
-	level := slog.LevelDebug
-
-	switch entry.Level {
-	case zapcore.DebugLevel:
-		level = slog.LevelDebug
-	case zapcore.InfoLevel:
-		level = slog.LevelInfo
-	case zapcore.WarnLevel:
-		level = slog.LevelWarn
-	case zapcore.ErrorLevel, zapcore.DPanicLevel, zapcore.PanicLevel, zapcore.FatalLevel:
-		level = slog.LevelError
-	default:
-		c.logger.Warn("Unknown log level, default to debug", "entry", entry)
-	}
-
 	// https://pkg.go.dev/log/slog#hdr-Writing_a_handler
-	r := slog.NewRecord(entry.Time, level, entry.Message, entry.Caller.PC)
+	r := slog.NewRecord(entry.Time, zapCoreLevelToSlogLevel(entry.Level), entry.Message, entry.Caller.PC)
 
 	err := c.logger.Handler().WithAttrs(attrs).Handle(context.Background(), r)
 	if err != nil {
@@ -124,4 +101,27 @@ func (c *zapSlogCore) Write(entry zapcore.Entry, fields []zapcore.Field) error {
 
 func (c *zapSlogCore) Sync() error {
 	return nil
+}
+
+// zapCoreLevelToSlogLevel converts a zapcore.Level to a slog.Level.
+// unsupported levels are converted to slog.LevelDebug.
+func zapCoreLevelToSlogLevel(level zapcore.Level) slog.Level {
+	switch level {
+	case zapcore.DebugLevel:
+		return slog.LevelDebug
+	case zapcore.InfoLevel:
+		return slog.LevelInfo
+	case zapcore.WarnLevel:
+		return slog.LevelWarn
+	case zapcore.ErrorLevel:
+		return slog.LevelError
+	case zapcore.DPanicLevel:
+		return slog.LevelError
+	case zapcore.PanicLevel:
+		return slog.LevelError
+	case zapcore.FatalLevel:
+		return slog.LevelError
+	default:
+		return slog.LevelDebug
+	}
 }
