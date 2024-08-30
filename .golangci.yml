@@ -10,6 +10,7 @@ linters:
     - ireturn  # not revelant
     - exhaustive  # not revelant
     - exhaustruct  # not revelant
+    - exportloopref  # deprecated
 
 linters-settings:
   govet:
