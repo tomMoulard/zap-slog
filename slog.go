@@ -13,6 +13,12 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
+// WrapCore wraps a slog.Logger as a zapcore.Core.
+// The returned zap.Option can be passed to zap.New.
+// Example:
+//
+//	logger := slog.Default()
+//	zapLogger, _ := zap.NewProduction(zapslog.WrapCore(logger))
 func WrapCore(logger *slog.Logger) zap.Option {
 	return zap.WrapCore(func(zapcore.Core) zapcore.Core {
 		return &zapSlogCore{logger: logger}
