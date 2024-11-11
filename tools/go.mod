@@ -1,11 +1,6 @@
 module github.com/tomMoulard/zap-slog/build
 
-go 1.22.5
-
-toolchain go1.23.0
-
-// FIXME: temporary fix for go.opentelemetry.io/otel/exporters/otlp/internal v0.20.1
-replace go.opentelemetry.io/otel/exporters/otlp/internal v0.20.1 => go.opentelemetry.io/otel/exporters/otlp/otlpmetric v0.43.0
+go 1.23.0
 
 require (
 	github.com/golangci/golangci-lint v1.60.3
