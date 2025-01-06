@@ -4,8 +4,6 @@ run:
 linters:
   enable-all: true
   disable:
-    - execinquery  # deprecated
-    - gomnd  # deprecated
     - mnd  # too strict
     - ireturn  # not revelant
     - exhaustive  # not revelant
