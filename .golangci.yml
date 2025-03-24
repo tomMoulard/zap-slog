@@ -4,11 +4,11 @@ run:
 linters:
   enable-all: true
   disable:
-    - mnd  # too strict
-    - ireturn  # not revelant
     - exhaustive  # not revelant
     - exhaustruct  # not revelant
-    - exportloopref  # deprecated
+    - ireturn  # not revelant
+    - mnd  # too strict
+    - tenv  # deprecated
 
 linters-settings:
   govet:
