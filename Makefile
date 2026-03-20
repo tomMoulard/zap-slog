@@ -48,6 +48,12 @@ test: ## go test
 	go test -race -covermode=atomic -coverprofile=coverage.out -coverpkg=./... ./...
 	go tool cover -html=coverage.out -o coverage.html
 
+.PHONY: test-bench
+test-bench:
+	mv new.txt old.txt || true
+	go test -bench=. -benchmem ./... | tee new.txt
+	go run golang.org/x/perf/cmd/benchstat@latest old.txt new.txt
+
 .PHONY: diff
 diff: ## git diff
 	git diff --exit-code

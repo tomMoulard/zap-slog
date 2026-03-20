@@ -63,6 +63,36 @@ func BenchmarkWrapCore(b *testing.B) {
 	}
 }
 
+func BenchmarkWrapCoreNoCaller(b *testing.B) {
+	loggerSlog := slog.New(noopSlogHandler{})
+
+	loggerZap, err := zap.NewProduction(zapslog.WrapCore(loggerSlog), zap.WithCaller(false))
+	require.NoError(b, err)
+
+	b.ResetTimer()
+
+	for range b.N {
+		loggerZap.Info("hello world")
+	}
+}
+
+func BenchmarkWrapCoreFields(b *testing.B) {
+	loggerSlog := slog.New(noopSlogHandler{})
+
+	loggerZap, err := zap.NewProduction(zapslog.WrapCore(loggerSlog), zap.WithCaller(false))
+	require.NoError(b, err)
+
+	b.ResetTimer()
+
+	for range b.N {
+		loggerZap.Info("hello world",
+			zap.String("key", "value"),
+			zap.Int("count", 42),
+			zap.Bool("flag", true),
+		)
+	}
+}
+
 func BenchmarkZap(b *testing.B) {
 	loggerZap, err := zap.NewProduction(zap.WrapCore(func(zapcore.Core) zapcore.Core {
 		return zapcore.NewNopCore()
@@ -73,6 +103,16 @@ func BenchmarkZap(b *testing.B) {
 
 	for range b.N {
 		loggerZap.Info("hello world")
+	}
+}
+
+func BenchmarkSlog(b *testing.B) {
+	loggerSlog := slog.New(noopSlogHandler{})
+
+	b.ResetTimer()
+
+	for range b.N {
+		loggerSlog.Info("hello world")
 	}
 }
 
