@@ -90,21 +90,21 @@ func (c *zapSlogCore) Check(entry zapcore.Entry, ce *zapcore.CheckedEntry) *zapc
 
 func (c *zapSlogCore) Write(entry zapcore.Entry, fields []zapcore.Field) error {
 	// https://pkg.go.dev/log/slog#hdr-Writing_a_handler
-	r := slog.NewRecord(entry.Time, zapCoreLevelToSlogLevel(entry.Level), entry.Message, entry.Caller.PC)
+	record := slog.NewRecord(entry.Time, zapCoreLevelToSlogLevel(entry.Level), entry.Message, entry.Caller.PC)
 
 	if entry.LoggerName != "" {
-		r.AddAttrs(slog.String("name", entry.LoggerName))
+		record.AddAttrs(slog.String("name", entry.LoggerName))
 	}
 
 	for _, field := range fields {
-		r.AddAttrs(fieldToAttr(field))
+		record.AddAttrs(fieldToAttr(field))
 	}
 
 	if entry.Stack != "" {
-		r.AddAttrs(slog.String("stack", entry.Stack))
+		record.AddAttrs(slog.String("stack", entry.Stack))
 	}
 
-	err := c.logger.Handler().Handle(context.Background(), r)
+	err := c.logger.Handler().Handle(context.Background(), record)
 	if err != nil {
 		return fmt.Errorf("failed to write log: %w", err)
 	}
