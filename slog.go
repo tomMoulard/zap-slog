@@ -43,10 +43,24 @@ func fieldToAttr(field zapcore.Field) slog.Attr {
 		return slog.Int64(field.Key, field.Integer)
 	case zapcore.Int32Type:
 		return slog.Int(field.Key, int(field.Integer))
+	case zapcore.Int16Type:
+		return slog.Int64(field.Key, field.Integer)
+	case zapcore.Int8Type:
+		return slog.Int64(field.Key, field.Integer)
 	case zapcore.Uint64Type:
+		return slog.Uint64(field.Key, uint64(field.Integer))
+	case zapcore.Uint32Type:
+		return slog.Uint64(field.Key, uint64(field.Integer))
+	case zapcore.Uint16Type:
+		return slog.Uint64(field.Key, uint64(field.Integer))
+	case zapcore.Uint8Type:
+		return slog.Uint64(field.Key, uint64(field.Integer))
+	case zapcore.UintptrType:
 		return slog.Uint64(field.Key, uint64(field.Integer))
 	case zapcore.Float64Type:
 		return slog.Float64(field.Key, math.Float64frombits(uint64(field.Integer)))
+	case zapcore.Float32Type:
+		return slog.Float64(field.Key, float64(math.Float32frombits(uint32(field.Integer))))
 	case zapcore.BoolType:
 		return slog.Bool(field.Key, field.Integer == 1)
 	case zapcore.TimeType:

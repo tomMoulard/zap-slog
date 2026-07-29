@@ -81,6 +81,11 @@ issues:
         - varnamelen
         - testableexamples
     - path: 'slog.go'
-      text: 'G115: integer overflow conversion int64 -> uint64'
+      text: 'G115: integer overflow conversion int64'
       linters:
         - gosec
+    - path: 'slog.go'
+      text: '\bfieldToAttr\b'
+      linters:
+        - cyclop
+        - gocyclo
